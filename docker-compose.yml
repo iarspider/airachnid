@@ -1,0 +1,159 @@
+networks:
+    internal:
+        name: internal
+
+services:
+    database:
+        container_name: postgres-db
+        image: pgvector/pgvector:pg16
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U $POSTGRES_ADMIN_USER -d $POSTGRES_DB -h localhost",
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 80s
+        ports:
+            - "5432:5432"
+        restart: unless-stopped
+        env_file: .env
+        environment:
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - /home/razumov/Work/AIAgent/airachnid/db/init:/docker-entrypoint-initdb.d
+        networks: [internal]
+
+    cache:
+        image: redis/redis-stack-server:7.4.0-v8
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+        restart: unless-stopped
+        env_file: .env
+        environment:
+            - REDISCLI_AUTH=${REDIS_PASSWORD}
+            - REDIS_ARGS=--requirepass ${REDIS_PASSWORD} --save 20 1 --loglevel warning
+        ports:
+            - "6379:6379"
+        volumes:
+            - cache:/data
+        networks: [internal]
+
+    # ollama:
+    #     image: ollama/ollama:latest
+    #     container_name: ollama
+    #     ports:
+    #         - "11434:11434"
+    #     volumes:
+    #         - ollama:/root/.ollama
+    #     restart: unless-stopped
+    #     networks: [internal]
+    #     healthcheck:
+    #         test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:11434/api/tags || exit 1"]
+
+    agent:
+        networks: [internal]
+        extra_hosts:
+            - "mcp-server:host-gateway"
+        build:
+            context: ./agent
+        env_file: .env
+        environment:
+            - POSTGRES_HOST=${POSTGRES_HOST}
+            - POSTGRES_PORT=${POSTGRES_PORT}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${AGENT_DB_USER}
+            - POSTGRES_PASSWORD=${AGENT_DB_PASSWORD}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
+            - OLLAMA_MODEL=${OLLAMA_MODEL}
+            - MCP_HOST=${MCP_SERVER_HOST}
+            - MCP_PORT=${MCP_SERVER_PORT}
+            - AGENT_HOST=${AGENT_HOST}
+            - AGENT_PORT=${AGENT_PORT}
+            #- VECTOR_SIZE=${VECTOR_SIZE}
+            - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+            - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+            - LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL}
+        ports: ["8001:8001"]
+        depends_on:
+            cache:
+                condition: service_healthy
+                restart: true
+            mcp-server:
+                condition: service_healthy
+                restart: true
+            database:
+                condition: service_healthy
+                restart: true
+            # ollama:
+            #     condition: service_healthy
+            #     restart: true
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "wget -qO- http://127.0.0.1:8001/healthz || exit 1",
+                ]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+        restart: unless-stopped
+
+    mcp-server:
+        network_mode: host
+        build:
+            context: ./mcp-server
+        env_file: .env
+        environment:
+            - VLC_HTTP_HOST=${VLC_HTTP_HOST}
+            - VLC_HTTP_PORT=${VLC_HTTP_PORT}
+            - VLC_HTTP_PASSWORD=${VLC_HTTP_PASSWORD}
+            - WIZ_BULBS=${WIZ_BULBS}
+            - FASTMCP_STATELESS_HTTP=1
+            - FASTMCP_HOST=0.0.0.0
+            - FASTMCP_PORT=${MCP_SERVER_PORT}
+            - FASTMCP_LOG_LEVEL=DEBUG
+        volumes:
+            - /home/razumov/.local/share/vlc/:/vlc
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "wget -qO- http://127.0.0.1:8000/healthz || exit 1",
+                ]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+        restart: unless-stopped
+
+    tg-bot:
+        networks: [internal]
+        build:
+            context: ./tg-bot
+        env_file: .env
+        environment:
+            - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+            - AGENT_HOST=${AGENT_HOST}
+            - AGENT_PORT=${AGENT_PORT}
+            - WHITELIST=${WHITELIST}
+        depends_on:
+            agent:
+                condition: service_healthy
+                restart: true
+        restart: unless-stopped
+
+volumes:
+    postgres_data:
+    cache:
+    # ollama:

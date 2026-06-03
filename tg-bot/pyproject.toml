@@ -1,0 +1,31 @@
+[project]
+name = "airachnid-tg-bot"
+version = "0.1.0"
+description = "AIrachnid Telegram bot UI"
+requires-python = ">=3.14"
+
+dependencies = [
+    "aiogram>=3.14",
+    "httpx>=0.27",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "isort>=8.0.1",
+]
