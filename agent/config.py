@@ -1,4 +1,6 @@
-from pydantic import Field
+from typing import Literal
+
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,12 +35,29 @@ class RedisSettings(BaseSettings):
 class OllamaSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    provider: Literal["ollama", "openrouter"] = Field(
+        alias="LLM_PROVIDER", default="ollama"
+    )
+    openrouter_api_key: str = Field(alias="OPENROUTER_API_KEY", default="")
+    openrouter_model: str = Field(
+        alias="OPENROUTER_MODEL", default="openai/gpt-4o-mini"
+    )
+
     base_url: str = Field(alias="OLLAMA_BASE_URL")
     model: str = Field(alias="OLLAMA_MODEL")
     classifier_model: str = Field(alias="CLASSIFIER_MODEL")
 
+    @model_validator(mode="after")
+    def validate_openrouter(self):
+        if self.provider != "ollama" and not self.openrouter_api_key:
+            raise ValueError(
+                "OPENROUTER_API_KEY not set when using 'openrouter' provider"
+            )
+
+        return self
+
     @property
-    def pydantic_ai_base_url(self):
+    def pydantic_ai_ollama_base_url(self) -> str:
         return f"{self.base_url}/v1"
 
 

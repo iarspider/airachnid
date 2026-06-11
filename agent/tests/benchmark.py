@@ -284,7 +284,7 @@ def get_judge_agent() -> Agent:
         model=OllamaModel(
             agent_settings.ollama.model,
             provider=OllamaProvider(
-                base_url=agent_settings.ollama.pydantic_ai_base_url
+                base_url=agent_settings.ollama.pydantic_ai_ollama_base_url
             ),
         ),
         output_type=NativeOutput(JudgeVerdict),

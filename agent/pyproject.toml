@@ -25,7 +25,8 @@ dependencies = [
     "langfuse>=4.0.0",
     "langchain>=1.2.12",
     "langchain-mcp-adapters>=0.2.2",
-    "pydantic-ai-slim[openai,fastmcp]>=1.102.0",
+    "pydantic-ai-slim[openai,fastmcp,openrouter]>=1.102.0",
+    "langchain-openrouter>=0.2.3",
 ]
 
 [project.optional-dependencies]

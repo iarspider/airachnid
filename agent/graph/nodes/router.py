@@ -11,7 +11,7 @@ from pydantic_ai.providers.ollama import OllamaProvider
 
 from config import agent_settings
 from graph.state import AgentState
-from llm import invoke_llm
+from llm import invoke_llm, get_pydantic_ai_model
 from prompts import RAG_OR_TOOL_PROMPT, TOOL_CALL_PROMPT
 from tools.mcp_client import get_client
 
@@ -56,9 +56,11 @@ def node_rag_or_tool(state: AgentState) -> AgentState:
 
     res = re.sub("[^a-z]", "", res.strip().lower())
 
-    if res not in ("tool", "rag", "invalid"):
+    if res not in ("tool", "rag"):
         logger.warning(f"Router returned invalid response: {res}")
         res = "invalid"
+        state["success"] = False
+        state["error"] = f"Router returned invalid response: {res}"
 
     logger.info(f"Classified request as {res}")
 
@@ -130,11 +132,7 @@ async def node_call_tools(state: AgentState) -> AgentState:
         f"http://{agent_settings.mcp.host}:{agent_settings.mcp.port}/mcp"
     )
 
-    model = OllamaModel(
-        agent_settings.ollama.model,
-        provider=OllamaProvider(base_url=agent_settings.ollama.pydantic_ai_base_url),
-        settings={"temperature": 0.0},
-    )
+    model = get_pydantic_ai_model(agent_settings.ollama.model)
 
     agent = Agent(
         model=model,

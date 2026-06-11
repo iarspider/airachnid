@@ -37,7 +37,7 @@ async def command_reindex_handler(message: Message) -> None:
         )
 
         async with httpx.AsyncClient() as client:
-            await client.post(
+            resp = await client.post(
                 bot_settings.reindex_url,
                 json={
                     "request": message.text,
@@ -46,10 +46,22 @@ async def command_reindex_handler(message: Message) -> None:
                 },
                 timeout=60.0,
             )
+
+            try:
+                resp.raise_for_status()
+                ans = resp.json()
+            except httpx.HTTPStatusError as e:
+                await msg.edit_text(f"Request to agent failed: {type(e)} {e}")
+                return
+
     finally:
         lock.release()
 
-    await msg.edit_text("✅ Векторное хранилище обновлено!")
+    await msg.edit_text(
+        "✅ Векторное хранилище обновлено!"
+        if ans["status"] == "OK"
+        else "❌ Ошибка обновления векторного хранилища!"
+    )
 
 
 @dp.message()

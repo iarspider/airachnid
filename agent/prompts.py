@@ -28,6 +28,7 @@ Examples:
 - "play a game" → rag
 - "tell me about Witcher" → rag
 - "turn off the lights" → tool
+- "change color to" → tool
 - "what's the weather" → invalid
 
 Category:"""
