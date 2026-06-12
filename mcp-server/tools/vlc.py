@@ -109,7 +109,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("pl_play")
         if not success:
             await ctx.error(f"Failed to start playback: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     @mcp.tool()
     async def vlc_resume(ctx: Context = CurrentContext()) -> dict:
@@ -118,7 +118,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("pl_forceresume")
         if not success:
             await ctx.error(f"Failed to resume playback: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     @mcp.tool()
     async def vlc_pause(ctx: Context = CurrentContext()) -> dict:
@@ -127,7 +127,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("pl_forcepause")
         if not success:
             await ctx.error(f"Failed to pause playback: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     @mcp.tool()
     async def vlc_stop(ctx: Context = CurrentContext()) -> dict:
@@ -136,7 +136,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("pl_stop")
         if not success:
             await ctx.error(f"Failed to stop playback: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     @mcp.tool()
     async def vlc_next(ctx: Context = CurrentContext()) -> dict:
@@ -145,7 +145,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("pl_next")
         if not success:
             await ctx.error(f"Failed to skip to next track: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     @mcp.tool()
     async def vlc_prev(ctx: Context = CurrentContext()) -> dict:
@@ -154,7 +154,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("pl_previous")
         if not success:
             await ctx.error(f"Failed to skip to previous track: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     @mcp.tool()
     async def seek(value: str, ctx: Context = CurrentContext()) -> dict:
@@ -163,7 +163,7 @@ def register(mcp: FastMCP):
         success, error = await vlc_command("seek", val=value)
         if not success:
             await ctx.error(f"Failed to seek: {error}")
-        return {"result": success, "error": error, "status": get_status(ctx)}
+        return {"result": success, "error": error, "status": await get_status(ctx)}
 
     # --- Volume tools ---
 

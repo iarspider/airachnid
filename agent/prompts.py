@@ -19,19 +19,30 @@ RAG_OR_TOOL_PROMPT = """Classify the user request into exactly one category.
 Output ONLY the category word, nothing else. No explanation, no punctuation.
 
 Categories:
-- rag: user asks about video games (search, description, recommendations)
-- tool: user wants to control VLC media player or lights
-- invalid: anything else
+
+* rag: user asks about video games (search, description, recommendations)
+* tool: user wants to control, query, or check the state/status of VLC media player or lights
+* invalid: anything else
 
 Examples:
-- "play next track" → tool
-- "play a game" → rag
-- "tell me about Witcher" → rag
-- "turn off the lights" → tool
-- "change color to" → tool
-- "what's the weather" → invalid
+
+* "play next track" → tool
+* "pause VLC" → tool
+* "what song is playing" → tool
+* "is VLC paused" → tool
+* "what is the current volume" → tool
+* "are the lights on" → tool
+* "what color are the lights" → tool
+* "dim the lights" → tool
+* "turn off the lights" → tool
+* "change color to blue" → tool
+* "play a game" → rag
+* "tell me about Witcher" → rag
+* "recommend RPG games" → rag
+* "what's the weather" → invalid
 
 Category:"""
+
 
 TOOL_CALL_PROMPT = """You control VLC media player and smart lights.
 

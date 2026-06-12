@@ -14,10 +14,11 @@ from graph.nodes.router import (
     route_after_route_rag_or_tool,
     router_after_validate,
     router_ddg_or_return,
-    node_call_tools,
     node_rag_or_tool,
     router_after_validate_output,
+    route_after_call_tools,
 )
+from graph.nodes.tool import node_call_tools
 from graph.nodes.search import node_ddg_search
 from graph.nodes.validator import node_validate_request, node_validate_output
 from graph.state import AgentState
@@ -51,7 +52,6 @@ async def build_graph(checkpointer=None) -> CompiledStateGraph:
     graph.add_edge("rag_rewriter", "rag")
     graph.add_edge("query_translator", "route_rag_or_tool")
     graph.add_edge("increment_retry", "route_rag_or_tool")
-    graph.add_edge("call_tools", END)
 
     ## graph.add_edge("validate_output", END)
 
@@ -78,6 +78,10 @@ async def build_graph(checkpointer=None) -> CompiledStateGraph:
         "validate_output",
         router_after_validate_output,
         {"retry": "increment_retry", "success": END, "error": "error_handler"},
+    )
+
+    graph.add_conditional_edges(
+        "call_tools", route_after_call_tools, {"success": END, "error": "error_handler"}
     )
 
     langfuse_handler = CallbackHandler()

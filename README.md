@@ -36,7 +36,8 @@ graph TD;
      increment_retry(increment_retry)
      __end__([<p>__end__</p>]):::last
      __start__ --> validate_request;
-     call_tools --> validate_output;
+     call_tools -. &nbsp;success&nbsp; .-> __end__;
+     call_tools -. &nbsp;error&nbsp; .-> error_handler;
      ddg --> generate_output;
      ddg_rewriter --> ddg;
      generate_output --> validate_output;
@@ -57,8 +58,6 @@ graph TD;
      classDef default fill:#f2f0ff,line-height:1.2
      classDef first fill-opacity:0
      classDef last fill:#bfb6fc
-
-
 ```
 
 

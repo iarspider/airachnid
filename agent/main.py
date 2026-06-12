@@ -75,7 +75,7 @@ async def reindex():
 
 @app.post("/invoke")
 async def invoke(req: InvokeRequest = Body()):
-    return run_agent(req.request, req.user, req.session, graph, langfuse_client)
+    return await run_agent(req.request, req.user, req.session, graph, langfuse_client)
 
 
 if __name__ == "__main__":
