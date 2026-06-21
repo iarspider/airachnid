@@ -34,8 +34,8 @@ async def run_agent(
         "retries": 0,
     }
 
-    # print(graph.get_graph().draw_mermaid())
-    # print("=" * 80)
+    print(graph.get_graph().draw_mermaid())
+    print("=" * 80)
 
     with langfuse_client.start_as_current_observation(
         as_type="span",

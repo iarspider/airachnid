@@ -152,6 +152,21 @@ services:
                 condition: service_healthy
                 restart: true
         restart: unless-stopped
+    cli:
+        networks: [internal]
+        build:
+            context: ./agent
+        env_file: .env
+        environment:
+            - AGENT_HOST=${AGENT_HOST}
+            - AGENT_PORT=${AGENT_PORT}
+        depends_on:
+            agent:
+                condition: service_healthy
+        stdin_open: true
+        tty: true
+        entrypoint: ["uv", "run", "python", "cli.py"]
+        profiles: ["cli"]
 
 volumes:
     postgres_data:
